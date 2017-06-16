@@ -72,8 +72,11 @@ static bool termwait(struct sipsess *sess)
 	sess->estabh  = internal_establish_handler;
 	sess->infoh   = NULL;
 	sess->referh  = NULL;
-	sess->closeh  = internal_close_handler;
-	sess->arg     = sess;
+
+	// The following lines are commented out to allow 487 CANCEL to be sent,
+	// but it is not clear why 4XX messages were not allowed previously.
+	// sess->closeh  = internal_close_handler;
+	// sess->arg     = sess;
 
 	tmr_cancel(&sess->tmr);
 

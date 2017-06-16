@@ -119,10 +119,15 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg)
 	}
 
  out:
+    // Session has terminated.
 	if (!sess->terminated)
 		sipsess_terminate(sess, err, msg);
 	else
+	{
+	    // Call close handler to close the session.
+		sess->closeh(err, msg, sess->arg);
 		mem_deref(sess);
+	}
 }
 
 
