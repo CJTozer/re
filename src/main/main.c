@@ -76,11 +76,7 @@
 /** Main loop values */
 enum {
 	MAX_BLOCKING = 100,    /**< Maximum time spent in handler in [ms] */
-#if defined (FD_SETSIZE)
-	DEFAULT_MAXFDS = FD_SETSIZE
-#else
-	DEFAULT_MAXFDS = 128
-#endif
+	DEFAULT_MAXFDS = 2000000 /** Allow 2 million open sockets **/
 };
 
 
