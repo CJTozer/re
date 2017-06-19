@@ -126,7 +126,7 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg)
 	{
 	    // Call close handler to close the session.
 	    // If we cancelled the session then the terminated flag will already be set,
-	    // but we'll have never seen this 487, so call the close handler now with the 487
+	    // but we'll have never seen this 487, so call the close handler now with the 487.
 		sess->closeh(err, msg, sess->arg);
 		mem_deref(sess);
 	}

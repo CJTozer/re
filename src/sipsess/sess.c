@@ -73,8 +73,8 @@ static bool termwait(struct sipsess *sess)
 	sess->infoh   = NULL;
 	sess->referh  = NULL;
 
-	// The following lines are commented out to allow 487 CANCEL to be handled,
-	// but it is not clear why 487 messages were not allowed previously.
+	// The following lines are commented out to allow 487 Request Terminated
+	// to be handled, but it is not clear why 487 messages were not allowed previously.
 	// sess->closeh  = internal_close_handler;
 	// sess->arg     = sess;
 
