@@ -659,8 +659,7 @@ void fd_close(int fd)
  */
 static int fd_poll(struct re *re)
 {
-//	const uint64_t to = tmr_next_timeout(&re->tmrl);
-	const uint64_t to = 20;
+	const uint64_t to = tmr_next_timeout(&re->tmrl);
 	int i, n;
 #ifdef HAVE_SELECT
 	fd_set rfds, wfds, efds;
@@ -967,20 +966,36 @@ int re_main(re_signal_h *signalh)
 	re->polling = true;
 
 	re_lock(re);
-	if (re->sig) {
-		if (signalh)
-			signalh(re->sig);
+	for (;;) {
 
-		re->sig = 0;
+		if (re->sig) {
+			if (signalh)
+				signalh(re->sig);
+
+			re->sig = 0;
+		}
+
+		if (!re->polling) {
+			err = 0;
+			break;
+		}
+
+		err = fd_poll(re);
+		if (err) {
+			if (EINTR == err)
+				continue;
+
+#ifdef DARWIN
+			/* NOTE: workaround for Darwin */
+			if (EBADF == err)
+				continue;
+#endif
+
+			break;
+		}
+
+		tmr_poll(&re->tmrl);
 	}
-
-	if (!re->polling) {
-		err = 0;
-	}
-
-	err = fd_poll(re);
-
-	tmr_poll(&re->tmrl);
 	re_unlock(re);
 
  out:
