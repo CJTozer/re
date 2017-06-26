@@ -37,17 +37,22 @@ struct realm {
 	char *opaque;
 	char *user;
 	char *pass;
+	int pass_len;
 	uint32_t nc;
 	enum sip_hdrid hdr;
 };
 
 
-static int dummy_handler(char **user, char **pass, const char *rlm, void *arg)
+static int dummy_handler(char **user, char **pass, int *pass_len, 
+	const char *rlm, void *arg, char *algorithm, char *nonce)
 {
 	(void)user;
 	(void)pass;
+	(void)pass_len;
 	(void)rlm;
 	(void)arg;
+	(void)algorithm;
+	(void)nonce;
 
 	return EAUTH;
 }
@@ -84,15 +89,25 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 	uint8_t ha1[MD5_SIZE], ha2[MD5_SIZE];
 	int err;
 
+	/* If the algorithm directive's value is "MD5" or unspecified,
+	then HA1 is HA1 = MD5(username:realm:password) */
+
+	char temp_str[100];
+	sprintf(temp_str, "%.*s", realm->pass_len, realm->pass);
 	err = md5_printf(ha1, "%s:%s:%s",
-			 realm->user, realm->realm, realm->pass);
+			 realm->user, realm->realm, temp_str);
+
 	if (err)
 		return err;
 
+    /* If the qop directive's value is "auth" or is unspecified,
+    then HA2 is HA2 = MD5(method:digestURI) */
 	err = md5_printf(ha2, "%s:%s", met, uri);
 	if (err)
 		return err;
 
+    /* If the qop directive's value is "auth" or "auth-int", then compute the response as follows:
+    response (here digest) = MD5(HA1:nonce:nonceCount:cnonce:qop:HA2) */
 	if (realm->qop)
 		return md5_printf(digest, "%w:%s:%08x:%016llx:auth:%w",
 				  ha1, sizeof(ha1),
@@ -100,6 +115,9 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 				  realm->nc,
 				  cnonce,
 				  ha2, sizeof(ha2));
+
+	/*If the qop directive is unspecified, then compute the response as follows:
+	response (here digest) = MD5(HA1:nonce:HA2) */
 	else
 		return md5_printf(digest, "%w:%s:%w",
 				  ha1, sizeof(ha1),
@@ -130,15 +148,21 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
 	int err;
 	(void)msg;
 
+    /* Decode the authentication challenge from the registrar */
 	if (httpauth_digest_challenge_decode(&ch, &hdr->val)) {
 		err = EBADMSG;
 		goto out;
 	}
 
-	if (pl_isset(&ch.algorithm) && pl_strcasecmp(&ch.algorithm, "md5")) {
-		err = ENOSYS;
-		goto out;
-	}
+	/* Verify the authentication mechanism used */
+    if (!pl_isset(&ch.algorithm) || 
+    	(strncmp((ch.algorithm).p, "MD5", 3) && 
+    	strncmp((ch.algorithm).p, "AKAv1", 5) &&
+        strncmp((ch.algorithm).p, "AKAv2", 5)))
+    {
+    	err = ENOSYS;
+        goto out;
+    }
 
 	realm = list_ledata(list_apply(&auth->realml, true, cmp_handler,
 				       &ch.realm));
@@ -154,11 +178,6 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
 		err = pl_strdup(&realm->realm, &ch.realm);
 		if (err)
 			goto out;
-
-		err = auth->authh(&realm->user, &realm->pass,
-				  realm->realm, auth->arg);
-		if (err)
-			goto out;
 	}
 	else {
 		if (!pl_isset(&ch.stale) || pl_strcasecmp(&ch.stale, "true")) {
@@ -170,6 +189,18 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
 		realm->qop    = mem_deref(realm->qop);
 		realm->opaque = mem_deref(realm->opaque);
 	}
+
+	/* Curly braces are used here to avoid goto 
+	from jumping over variable declaration. */
+{
+	char *nonce[(ch.nonce).l];
+	memcpy(nonce, (ch.nonce).p, (ch.nonce).l);
+	err = auth->authh(&realm->user, &realm->pass, &realm->pass_len,
+			  realm->realm, auth->arg, (ch.algorithm).p, nonce);
+
+	if (err)
+		goto out;
+}
 
 	realm->hdr = hdr->id;
 	realm->nc  = 1;
