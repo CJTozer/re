@@ -44,7 +44,7 @@ struct realm {
 
 
 static int dummy_handler(char **user, char **pass, int *pass_len, 
-	const char *rlm, void *arg, char *algorithm, char *nonce)
+			const char *rlm, char *algorithm, char *nonce, void *arg)
 {
 	(void)user;
 	(void)pass;
@@ -89,8 +89,8 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 	uint8_t ha1[MD5_SIZE], ha2[MD5_SIZE];
 	int err;
 
-	/* If the algorithm directive's value is "MD5" or unspecified,
-	then HA1 is HA1 = MD5(username:realm:password) */
+	/* Here the algorithm directive's value is "MD5" or unspecified,
+	so HA1 is HA1 = MD5(username:realm:password) */
 
 	char temp_str[100];
 	sprintf(temp_str, "%.*s", realm->pass_len, realm->pass);
@@ -100,8 +100,8 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 	if (err)
 		return err;
 
-    /* If the qop directive's value is "auth" or is unspecified,
-    then HA2 is HA2 = MD5(method:digestURI) */
+    /* The qop directive's value is "auth" or is unspecified,
+    so HA2 is HA2 = MD5(method:digestURI) */
 	err = md5_printf(ha2, "%s:%s", met, uri);
 	if (err)
 		return err;
@@ -155,6 +155,7 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
 	}
 
 	/* Verify the authentication mechanism used */
+	/* strncmp(a, b, m) compares the first m characters in a and b */
     if (!pl_isset(&ch.algorithm) || 
     	(strncmp((ch.algorithm).p, "MD5", 3) && 
     	strncmp((ch.algorithm).p, "AKAv1", 5) &&
@@ -192,15 +193,15 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
 
 	/* Curly braces are used here to avoid goto 
 	from jumping over variable declaration. */
-{
-	char *nonce[(ch.nonce).l];
-	memcpy(nonce, (ch.nonce).p, (ch.nonce).l);
-	err = auth->authh(&realm->user, &realm->pass, &realm->pass_len,
-			  realm->realm, auth->arg, (ch.algorithm).p, nonce);
+	{
+		char *nonce[(ch.nonce).l];
+		memcpy(nonce, (ch.nonce).p, (ch.nonce).l);
+		err = auth->authh(&realm->user, &realm->pass, &realm->pass_len,
+				  realm->realm, nonce, auth->arg);
 
-	if (err)
-		goto out;
-}
+		if (err)
+			goto out;
+	}
 
 	realm->hdr = hdr->id;
 	realm->nc  = 1;

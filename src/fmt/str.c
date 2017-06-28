@@ -56,36 +56,6 @@ void str_ncpy(char *dst, const char *src, size_t n)
 
 
 /**
- * Duplicate a 0-terminated string
- *
- * @param dst Pointer to destination string (set on return)
- * @param src Source string
- *
- * @return 0 if success, otherwise errorcode
- */
-int str_dup(char **dst, const char *src)
-{
-	char *p;
-	size_t sz;
-
-	if (!dst || !src)
-		return EINVAL;
-
-	sz = strlen(src) + 1;
-
-	p = mem_alloc(sz, NULL);
-	if (!p)
-		return ENOMEM;
-
-	memcpy(p, src, sz);
-
-	*dst = p;
-
-	return 0;
-}
-
-
-/**
  * Duplicate a fixed-length string with possible '\0' in middle
  *
  * @param dst Pointer to destination string (set on return)
@@ -115,6 +85,20 @@ int str_dup_len(char **dst, const char *src, int *dst_len, const int src_len)
 	*dst_len = src_len - 1;
 
 	return 0;
+}
+
+/**
+ * Duplicate a 0-terminated string
+ *
+ * @param dst Pointer to destination string (set on return)
+ * @param src Source string
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int str_dup(char **dst, const char *src)
+{
+	int temp_len = 0;
+	return str_dup_len(dst, src, &temp_len, strlen(src));
 }
 
 
