@@ -44,14 +44,13 @@ struct realm {
 
 
 static int dummy_handler(char **user, char **pass, int *pass_len, 
-			const char *rlm, char *algorithm, char *nonce, void *arg)
+			const char *rlm, char *nonce, void *arg)
 {
 	(void)user;
 	(void)pass;
 	(void)pass_len;
 	(void)rlm;
 	(void)arg;
-	(void)algorithm;
 	(void)nonce;
 
 	return EAUTH;
