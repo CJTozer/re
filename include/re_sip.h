@@ -256,7 +256,7 @@ int  sip_send(struct sip *sip, void *sock, enum sip_transp tp,
 
 
 /* transport */
-int  sip_transp_add(struct sip *sip, enum sip_transp tp,
+int  sip_transp_add(struct sip *sip, enum sip_transp tp, int tcp_idle_timeout,
 		    const struct sa *laddr, ...);
 void sip_transp_flush(struct sip *sip);
 bool sip_transp_isladdr(const struct sip *sip, enum sip_transp tp,
