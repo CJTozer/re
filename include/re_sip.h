@@ -237,7 +237,7 @@ typedef void(sip_resp_h)(int err, const struct sip_msg *msg, void *arg);
 typedef void(sip_cancel_h)(void *arg);
 typedef void(sip_exit_h)(void *arg);
 typedef int(sip_auth_h)(char **username, char **password, int *password_len, 
-			const char *realm, char *nonce, void *arg);
+			const char *realm, struct pl nonce, void *arg);
 typedef bool(sip_hdr_h)(const struct sip_hdr *hdr, const struct sip_msg *msg,
 			void *arg);
 typedef void(sip_keepalive_h)(int err, void *arg);

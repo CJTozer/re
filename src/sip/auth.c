@@ -92,12 +92,10 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 	so HA1 is HA1 = MD5(username:realm:password) */
 
 	char temp_str[100];
-	sprintf(temp_str, "%.*s", realm->pass_len, realm->pass);
-	err = md5_printf(ha1, "%s:%s:%s",
-			 realm->user, realm->realm, temp_str);
-
-	if (err)
-		return err;
+	sprintf(temp_str, "%s:%s:", realm->user, realm->realm);
+	int temp_len = strlen(temp_str);
+	memcpy(temp_str + temp_len, realm->pass, realm->pass_len);
+	md5(temp_str, temp_len + realm->pass_len, ha1);
 
     /* The qop directive's value is "auth" or is unspecified,
     so HA2 is HA2 = MD5(method:digestURI) */
@@ -190,17 +188,8 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
 		realm->opaque = mem_deref(realm->opaque);
 	}
 
-	/* Curly braces are used here to avoid goto 
-	from jumping over variable declaration. */
-	{
-		char *nonce[(ch.nonce).l];
-		memcpy(nonce, (ch.nonce).p, (ch.nonce).l);
-		err = auth->authh(&realm->user, &realm->pass, &realm->pass_len,
-				  realm->realm, nonce, auth->arg);
-
-		if (err)
-			goto out;
-	}
+	err = auth->authh(&realm->user, &realm->pass, &realm->pass_len,
+	                 realm->realm, ch.nonce, auth->arg);
 
 	realm->hdr = hdr->id;
 	realm->nc  = 1;
