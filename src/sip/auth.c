@@ -97,14 +97,14 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 	memcpy(temp_str + temp_len, realm->pass, realm->pass_len);
 	md5(temp_str, temp_len + realm->pass_len, ha1);
 
-    /* The qop directive's value is "auth" or is unspecified,
-    so HA2 is HA2 = MD5(method:digestURI) */
+	/* The qop directive's value is "auth" or is unspecified,
+	so HA2 is HA2 = MD5(method:digestURI) */
 	err = md5_printf(ha2, "%s:%s", met, uri);
 	if (err)
 		return err;
 
-    /* If the qop directive's value is "auth" or "auth-int", then compute the response as follows:
-    response (here digest) = MD5(HA1:nonce:nonceCount:cnonce:qop:HA2) */
+	/* If the qop directive's value is "auth" or "auth-int", then compute the response as follows:
+	response (here digest) = MD5(HA1:nonce:nonceCount:cnonce:qop:HA2) */
 	if (realm->qop)
 		return md5_printf(digest, "%w:%s:%08x:%016llx:auth:%w",
 				  ha1, sizeof(ha1),
@@ -145,20 +145,20 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
 	int err;
 	(void)msg;
 
-    /* Decode the authentication challenge from the registrar */
+	/* Decode the authentication challenge from the registrar */
 	if (httpauth_digest_challenge_decode(&ch, &hdr->val)) {
 		err = EBADMSG;
 		goto out;
 	}
 
-	/* Verify the authentication mechanism used */
-	/* strncmp(a, b, m) compares the first m characters in a and b */
-    if (!pl_isset(&ch.algorithm) || 
-    	(strncmp((ch.algorithm).p, "MD5", 3) && 
-    	strncmp((ch.algorithm).p, "AKAv1", 5) &&
+    /* Verify the authentication mechanism used */
+    /* strncmp(a, b, m) compares the first m characters in a and b */
+    if (!pl_isset(&ch.algorithm) ||
+        (strncmp((ch.algorithm).p, "MD5", 3) &&
+        strncmp((ch.algorithm).p, "AKAv1", 5) &&
         strncmp((ch.algorithm).p, "AKAv2", 5)))
     {
-    	err = ENOSYS;
+        err = ENOSYS;
         goto out;
     }
 

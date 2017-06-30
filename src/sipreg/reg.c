@@ -346,7 +346,7 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
 	if (err)
 		goto out;
 
-    /* Allocate a SIP authentication state into reg->auth */
+	/* Allocate a SIP authentication state into reg->auth */
 	err = sip_auth_alloc(&reg->auth, authh, aarg, aref);
 	if (err)
 		goto out;
@@ -382,7 +382,7 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
 	reg->arg     = arg;
 	reg->regid   = regid;
 
-    /* Send the REGISTER request */
+	/* Send the REGISTER request */
 	err = request(reg, true);
 	if (err)
 		goto out;
