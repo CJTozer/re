@@ -170,7 +170,7 @@ static bool contact_handler(const struct sip_hdr *hdr,
 
 static void response_handler(int err, const struct sip_msg *msg, void *arg)
 {
-	const struct sip_hdr *minexp;
+    const struct sip_hdr *minexp;
 	struct sipreg *reg = arg;
 
 	reg->wait = failwait(reg->failc + 1);
@@ -202,6 +202,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 
 		case 401:
 		case 407:
+		    /* Update a SIP authentication state from a SIP message */
 			err = sip_auth_authenticate(reg->auth, msg);
 			if (err) {
 				err = (err == EAUTH) ? 0 : err;
@@ -345,6 +346,7 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
 	if (err)
 		goto out;
 
+    /* Allocate a SIP authentication state into reg->auth */
 	err = sip_auth_alloc(&reg->auth, authh, aarg, aref);
 	if (err)
 		goto out;
@@ -380,6 +382,7 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
 	reg->arg     = arg;
 	reg->regid   = regid;
 
+    /* Send the REGISTER request */
 	err = request(reg, true);
 	if (err)
 		goto out;
