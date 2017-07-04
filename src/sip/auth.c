@@ -156,8 +156,8 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
     /* strncmp(a, b, m) compares the first m characters in a and b */
     if (!pl_isset(&ch.algorithm) ||
         (strncmp((ch.algorithm).p, "MD5", 3) &&
-        strncmp((ch.algorithm).p, "AKAv1", 5) &&
-        strncmp((ch.algorithm).p, "AKAv2", 5)))
+         strncmp((ch.algorithm).p, "AKAv1", 5) &&
+         strncmp((ch.algorithm).p, "AKAv2", 5)))
     {
         err = ENOSYS;
         goto out;

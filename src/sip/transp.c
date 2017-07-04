@@ -38,7 +38,7 @@ struct sip_transport {
 	struct tls *tls;
 	void *sock;
 
-	/* The time for a TCP connection to expire */
+	/* The time for an idle TCP connection to expire */
 	int tcp_idle_timeout;
 	enum sip_transp tp;
 };
@@ -360,19 +360,19 @@ static void tcp_recv_handler(struct mbuf *mb, void *arg)
 
 		if (!memcmp(mbuf_buf(conn->mb), "\r\n", 2)) {
 
-            /* Look for the TCP SIP transport within the SIP Stack. */
-		    const struct sip_transport *transp;
+			/* Look for the TCP SIP transport within the SIP Stack. */
+			const struct sip_transport *transp;
 
-            transp = transp_find(
-                conn->sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
-            if (!transp) {
-                err = EPROTONOSUPPORT;
-                goto out;
-            }
+			transp = transp_find(
+				conn->sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
+			if (!transp) {
+			    err = EPROTONOSUPPORT;
+			    goto out;
+			}
 
-            /* Set a timer for the TCP connection so the connection
-            will be torn down when it expires. */
-            tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
+			/* Set a timer for the TCP connection so the connection
+			will be torn down when it expires. */
+			tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
 				  conn_tmr_handler, conn);
 
 			conn->mb->pos += 2;
@@ -424,20 +424,20 @@ static void tcp_recv_handler(struct mbuf *mb, void *arg)
 			break;
 		}
 
-        /* Look for the TCP SIP transport within the SIP Stack. */
-        const struct sip_transport *transp;
+		/* Look for the TCP SIP transport within the SIP Stack. */
+		const struct sip_transport *transp;
 
-        transp = transp_find(
-            conn->sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
-        if (!transp) {
-            err = EPROTONOSUPPORT;
-            goto out;
-        }
+		transp = transp_find(
+			conn->sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
+		if (!transp) {
+			err = EPROTONOSUPPORT;
+			goto out;
+		}
 
-        /* Set a timer for the TCP connection so the connection
-        will be torn down when it expires. */
-        tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
-              conn_tmr_handler, conn);
+		/* Set a timer for the TCP connection so the connection
+		will be torn down when it expires. */
+		tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
+			  conn_tmr_handler, conn);
 
 		end = conn->mb->end;
 
@@ -552,10 +552,10 @@ static void tcp_connect_handler(const struct sa *paddr, void *arg)
 	}
 #endif
 
-    /* Set a timer for the TCP connection so the connection
-    will be torn down when it expires. */
+	/* Set a timer for the TCP connection so the connection
+	will be torn down when it expires. */
 	tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
-	         conn_tmr_handler, conn);
+		  conn_tmr_handler, conn);
 
  out:
 	if (err) {
@@ -566,8 +566,8 @@ static void tcp_connect_handler(const struct sa *paddr, void *arg)
 
 
 static int conn_send(struct sip_connqent **qentp, struct sip *sip, bool secure,
-                    const struct sa *dst, struct mbuf *mb,
-		            sip_transp_h *transph, void *arg)
+	             const struct sa *dst, struct mbuf *mb, 
+		     sip_transp_h *transph, void *arg)
 {
 	struct sip_conn *conn, *new_conn = NULL;
 	struct sip_connqent *qent;
@@ -614,16 +614,16 @@ static int conn_send(struct sip_connqent **qentp, struct sip *sip, bool secure,
 	}
 #endif
 
-    const struct sip_transport *transp;
+	const struct sip_transport *transp;
 
-    transp = transp_find(sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
-    if (!transp) {
-        err = EPROTONOSUPPORT;
-        goto out;
-    }
+	transp = transp_find(sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
+	if (!transp) {
+		err = EPROTONOSUPPORT;
+		goto out;
+	}
 
 	tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
-	         conn_tmr_handler, conn);
+		  conn_tmr_handler, conn);
 
  enqueue:
 	qent = mem_zalloc(sizeof(*qent), qent_destructor);
@@ -751,8 +751,8 @@ void sip_transp_flush(struct sip *sip)
 
 
 int sip_transp_send(struct sip_connqent **qentp, struct sip *sip, void *sock,
-                   enum sip_transp tp, const struct sa *dst, struct mbuf *mb,
-                   sip_transp_h *transph, void *arg)
+		    enum sip_transp tp, const struct sa *dst, struct mbuf *mb,
+		    sip_transp_h *transph, void *arg)
 {
 	const struct sip_transport *transp;
 	struct sip_conn *conn;
@@ -798,7 +798,7 @@ int sip_transp_send(struct sip_connqent **qentp, struct sip *sip, void *sock,
 
 
 int sip_transp_laddr(struct sip *sip, struct sa *laddr, enum sip_transp tp,
-		      const struct sa *dst)
+		     const struct sa *dst)
 {
 	const struct sip_transport *transp;
 

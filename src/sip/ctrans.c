@@ -385,8 +385,8 @@ int sip_ctrans_cancel(struct sip_ctrans *ct)
 	if (err)
 		goto out;
 
-	err = sip_ctrans_request(NULL, ct->sip, ct->tp,&ct->dst, cancel,
-	                         ct->branch, mb, NULL, NULL);
+	err = sip_ctrans_request(NULL, ct->sip, ct->tp, &ct->dst, cancel,
+				 ct->branch, mb, NULL, NULL);
 	if (err)
 		goto out;
 
