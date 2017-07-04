@@ -92,7 +92,7 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 	so HA1 is HA1 = MD5(username:realm:password) */
 
 	char temp_str[100];
-        int temp_len;
+	int temp_len;
 	sprintf(temp_str, "%s:%s:", realm->user, realm->realm);
 	temp_len = strlen(temp_str);
 	memcpy(temp_str + temp_len, realm->pass, realm->pass_len);
