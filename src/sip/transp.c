@@ -26,12 +26,10 @@
 
 enum {
 	TCP_ACCEPT_TIMEOUT    = 32,
-	TCP_IDLE_TIMEOUT      = 900,
 	TCP_KEEPALIVE_TIMEOUT = 10,
 	TCP_KEEPALIVE_INTVAL  = 120,
 	TCP_BUFSIZE_MAX       = 65536,
 };
-
 
 struct sip_transport {
 	struct le le;
@@ -39,6 +37,9 @@ struct sip_transport {
 	struct sip *sip;
 	struct tls *tls;
 	void *sock;
+
+	/* The time for an idle TCP connection to expire */
+	int tcp_idle_timeout;
 	enum sip_transp tp;
 };
 
@@ -359,7 +360,19 @@ static void tcp_recv_handler(struct mbuf *mb, void *arg)
 
 		if (!memcmp(mbuf_buf(conn->mb), "\r\n", 2)) {
 
-			tmr_start(&conn->tmr, TCP_IDLE_TIMEOUT * 1000,
+			/* Look for the TCP SIP transport within the SIP Stack. */
+			const struct sip_transport *transp;
+
+			transp = transp_find(
+				conn->sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
+			if (!transp) {
+			    err = EPROTONOSUPPORT;
+			    goto out;
+			}
+
+			/* Set a timer for the TCP connection so the connection
+			will be torn down when it expires. */
+			tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
 				  conn_tmr_handler, conn);
 
 			conn->mb->pos += 2;
@@ -411,7 +424,19 @@ static void tcp_recv_handler(struct mbuf *mb, void *arg)
 			break;
 		}
 
-		tmr_start(&conn->tmr, TCP_IDLE_TIMEOUT * 1000,
+		/* Look for the TCP SIP transport within the SIP Stack. */
+		const struct sip_transport *transp;
+
+		transp = transp_find(
+			conn->sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
+		if (!transp) {
+			err = EPROTONOSUPPORT;
+			goto out;
+		}
+
+		/* Set a timer for the TCP connection so the connection
+		will be torn down when it expires. */
+		tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
 			  conn_tmr_handler, conn);
 
 		end = conn->mb->end;
@@ -527,7 +552,9 @@ static void tcp_connect_handler(const struct sa *paddr, void *arg)
 	}
 #endif
 
-	tmr_start(&conn->tmr, TCP_ACCEPT_TIMEOUT * 1000,
+	/* Set a timer for the TCP connection so the connection
+	will be torn down when it expires. */
+	tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
 		  conn_tmr_handler, conn);
 
  out:
@@ -539,7 +566,7 @@ static void tcp_connect_handler(const struct sa *paddr, void *arg)
 
 
 static int conn_send(struct sip_connqent **qentp, struct sip *sip, bool secure,
-		     const struct sa *dst, struct mbuf *mb,
+	             const struct sa *dst, struct mbuf *mb, 
 		     sip_transp_h *transph, void *arg)
 {
 	struct sip_conn *conn, *new_conn = NULL;
@@ -587,7 +614,16 @@ static int conn_send(struct sip_connqent **qentp, struct sip *sip, bool secure,
 	}
 #endif
 
-	tmr_start(&conn->tmr, TCP_IDLE_TIMEOUT * 1000, conn_tmr_handler, conn);
+	const struct sip_transport *transp;
+
+	transp = transp_find(sip, SIP_TRANSP_TCP, sa_af(&conn->laddr), &conn->laddr);
+	if (!transp) {
+		err = EPROTONOSUPPORT;
+		goto out;
+	}
+
+	tmr_start(&conn->tmr, transp->tcp_idle_timeout * 1000,
+		  conn_tmr_handler, conn);
 
  enqueue:
 	qent = mem_zalloc(sizeof(*qent), qent_destructor);
@@ -624,14 +660,15 @@ int sip_transp_init(struct sip *sip, uint32_t sz)
 /**
  * Add a SIP transport
  *
- * @param sip   SIP stack instance
- * @param tp    SIP Transport
- * @param laddr Local network address
- * @param ...   Optional transport parameters such as TLS context
+ * @param sip               SIP stack instance
+ * @param tp                SIP Transport
+ * @param tcp_idle_timeout  TCP connection lifetime
+ * @param laddr             Local network address
+ * @param ...               Optional transport parameters such as TLS context
  *
  * @return 0 if success, otherwise errorcode
  */
-int sip_transp_add(struct sip *sip, enum sip_transp tp,
+int sip_transp_add(struct sip *sip, enum sip_transp tp, int tcp_idle_timeout,
 		   const struct sa *laddr, ...)
 {
 	struct sip_transport *transp;
@@ -647,8 +684,9 @@ int sip_transp_add(struct sip *sip, enum sip_transp tp,
 		return ENOMEM;
 
 	list_append(&sip->transpl, &transp->le, transp);
-	transp->sip = sip;
-	transp->tp  = tp;
+	transp->sip              = sip;
+	transp->tp               = tp;
+	transp->tcp_idle_timeout = tcp_idle_timeout;
 
 	va_start(ap, laddr);
 
@@ -744,12 +782,10 @@ int sip_transp_send(struct sip_connqent **qentp, struct sip *sip, void *sock,
 
 	case SIP_TRANSP_TCP:
 		conn = sock;
-
 		if (conn && conn->tc)
 			err = tcp_send(conn->tc, mb);
 		else
-			err = conn_send(qentp, sip, secure, dst, mb,
-					transph, arg);
+			err = conn_send(qentp, sip, secure, dst, mb, transph, arg);
 		break;
 
 	default:
@@ -762,7 +798,7 @@ int sip_transp_send(struct sip_connqent **qentp, struct sip *sip, void *sock,
 
 
 int sip_transp_laddr(struct sip *sip, struct sa *laddr, enum sip_transp tp,
-		      const struct sa *dst)
+		     const struct sa *dst)
 {
 	const struct sip_transport *transp;
 
