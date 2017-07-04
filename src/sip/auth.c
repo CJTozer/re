@@ -44,7 +44,7 @@ struct realm {
 
 
 static int dummy_handler(char **user, char **pass, int *pass_len, 
-			const char *rlm, char *nonce, void *arg)
+			const char *rlm, struct pl nonce, void *arg)
 {
 	(void)user;
 	(void)pass;
@@ -92,10 +92,11 @@ static int mkdigest(uint8_t *digest, const struct realm *realm,
 	so HA1 is HA1 = MD5(username:realm:password) */
 
 	char temp_str[100];
+        int temp_len;
 	sprintf(temp_str, "%s:%s:", realm->user, realm->realm);
-	int temp_len = strlen(temp_str);
+	temp_len = strlen(temp_str);
 	memcpy(temp_str + temp_len, realm->pass, realm->pass_len);
-	md5(temp_str, temp_len + realm->pass_len, ha1);
+	md5((const uint8_t*)temp_str, temp_len + realm->pass_len, ha1);
 
 	/* The qop directive's value is "auth" or is unspecified,
 	so HA2 is HA2 = MD5(method:digestURI) */
