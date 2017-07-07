@@ -172,5 +172,7 @@ void heap_remove_item(heap_t * hp, struct tmr *item);
  * @return 1 if the heap contains this item; otherwise 0 */
 int heap_contains_item(const heap_t * hp, const struct tmr *item);
 
-
+/**
+ * Print out status of heap
+ */
 int heap_status(heap_t* tmrh, struct re_printf *pf);

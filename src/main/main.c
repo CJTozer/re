@@ -96,7 +96,7 @@ struct re {
 	bool update;                 /**< File descriptor set need updating */
 	bool polling;                /**< Is polling flag                   */
 	int sig;                     /**< Last caught signal                */
-	heap_t* tmrl;            /**< List of timers                    */
+	heap_t* tmr_heap;            /**< Timer heap                        */
 
 #ifdef HAVE_POLL
 	struct pollfd *fds;          /**< Event set for poll()              */
@@ -657,7 +657,7 @@ void fd_close(int fd)
  */
 static int fd_poll(struct re *re)
 {
-	const uint64_t to = tmr_next_timeout(re->tmrl);
+	const uint64_t to = tmr_next_timeout(re->tmr_heap);
 	int i, n;
 #ifdef HAVE_SELECT
 	fd_set rfds, wfds, efds;
@@ -953,8 +953,8 @@ int re_main(re_signal_h *signalh)
 		return EALREADY;
 	}
 
-	if (re->tmrl == NULL)
-		re->tmrl = heap_new();
+	if (re->tmr_heap == NULL)
+		re->tmr_heap = heap_new();
 
 	err = poll_setup(re);
 	if (err)
@@ -994,7 +994,7 @@ int re_main(re_signal_h *signalh)
 			break;
 		}
 
-		tmr_poll(re->tmrl);
+		tmr_poll(re->tmr_heap);
 	}
 	re_unlock(re);
 
@@ -1209,13 +1209,16 @@ void re_set_mutex(void *mutexp)
  *
  * @return Timer list
  *
- * @note only used by tmr module
+ * @note only used by tmr module - also declared as extern in tmr.c
  */
+
+/* Prototype needed to avoid warning. */
 heap_t *tmrh_get(void);
+
 heap_t *tmrh_get(void)
 {
 	struct re *re = re_get();
-	if (re->tmrl == NULL)
-		re->tmrl = heap_new();
-	return re->tmrl;
+	if (re->tmr_heap == NULL)
+		re->tmr_heap = heap_new();
+	return re->tmr_heap;
 }

@@ -79,32 +79,6 @@ static int __parent(const int idx)
 	return (idx - 1) / 2;
 }
 
-int heap_status(heap_t* tmrh, struct re_printf *pf)
-{
-	uint32_t n;
-	int err;
-
-	n = tmrh->count;
-	if (!n)
-		return 0;
-
-	err = re_hprintf(pf, "Timers (%u):\n", n);
-
-	for (unsigned int ii = 0; ii < n; ii++) {
-		const struct tmr *tmr = tmrh->array[ii];
-
-		err |= re_hprintf(pf, "  %p: th=%p expire=%llums\n",
-						  tmr, tmr->th,
-						  (unsigned long long)tmr_get_expire(tmr));
-	}
-
-	if (n > 100)
-		err |= re_hprintf(pf, "    (Dumped Timers: %u)\n", n);
-
-	return err;
-}
-
-
 void heap_init(heap_t* h,
 			   unsigned int size)
 {
@@ -319,4 +293,29 @@ int heap_count(const heap_t * h)
 int heap_size(const heap_t * h)
 {
 	return h->size;
+}
+
+int heap_status(heap_t* tmrh, struct re_printf *pf)
+{
+	uint32_t n;
+	int err;
+
+	n = tmrh->count;
+	if (!n)
+		return 0;
+
+	err = re_hprintf(pf, "Timers (%u):\n", n);
+
+	for (unsigned int ii = 0; ii < n; ii++) {
+		const struct tmr *tmr = tmrh->array[ii];
+
+		err |= re_hprintf(pf, "  %p: th=%p expire=%llums\n",
+						  tmr, tmr->th,
+						  (unsigned long long)tmr_get_expire(tmr));
+	}
+
+	if (n > 100)
+		err |= re_hprintf(pf, "    (Dumped Timers: %u)\n", n);
+
+	return err;
 }
