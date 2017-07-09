@@ -1209,12 +1209,7 @@ void re_set_mutex(void *mutexp)
  *
  * @return Timer list
  *
- * @note only used by tmr module - also declared as extern in tmr.c
  */
-
-/* Prototype needed to avoid warning. */
-heap_t *tmrh_get(void);
-
 heap_t *tmrh_get(void)
 {
 	struct re *re = re_get();

@@ -25,6 +25,7 @@
 #include <re_mem.h>
 #include <re_mbuf.h>
 #include <re_list.h>
+#include <re_tmr.h>
 #include <re_main.h>
 #include <re_sa.h>
 #include <re_net.h>

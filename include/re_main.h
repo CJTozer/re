@@ -4,7 +4,6 @@
  * Copyright (C) 2010 Creytiv.com
  */
 
-
 enum {
 #ifndef FD_READ
 	FD_READ   = 1<<0,
@@ -50,6 +49,8 @@ void re_thread_enter(void);
 void re_thread_leave(void);
 
 void re_set_mutex(void *mutexp);
+
+heap_t *tmrh_get(void);
 
 
 /** Polling methods */
