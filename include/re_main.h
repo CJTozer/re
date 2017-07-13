@@ -30,7 +30,9 @@ typedef void (fd_h)(int flags, void *arg);
  */
 typedef void (re_signal_h)(int sig);
 
+typedef int   (fd_listen_h)(int fd, int flags, fd_h *fh, void *arg);
 
+void  register_fd_listen_h(fd_listen_h* fdlh);
 int   fd_listen(int fd, int flags, fd_h *fh, void *arg);
 void  fd_close(int fd);
 int   fd_setsize(int maxfds);

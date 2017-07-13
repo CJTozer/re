@@ -97,6 +97,7 @@ struct re {
 	bool polling;                /**< Is polling flag                   */
 	int sig;                     /**< Last caught signal                */
 	heap_t* tmr_heap;            /**< Timer heap                        */
+	fd_listen_h* fdlh;
 
 #ifdef HAVE_POLL
 	struct pollfd *fds;          /**< Event set for poll()              */
@@ -126,6 +127,7 @@ static struct re global_re = {
 	false,
 	false,
 	0,
+	NULL,
 	NULL,
 #ifdef HAVE_POLL
 	NULL,
@@ -552,6 +554,11 @@ static int poll_setup(struct re *re)
 	return err;
 }
 
+void  register_fd_listen_h(fd_listen_h* fdlh)
+{
+	struct re *re = re_get();
+	re->fdlh = fdlh;
+}
 
 /**
  * Listen for events on a file descriptor
@@ -563,7 +570,7 @@ static int poll_setup(struct re *re)
  *
  * @return 0 if success, otherwise errorcode
  */
-int fd_listen(int fd, int flags, fd_h *fh, void *arg)
+static int fd_listen_int(int fd, int flags, fd_h *fh, void *arg)
 {
 	struct re *re = re_get();
 	int err = 0;
@@ -636,6 +643,13 @@ int fd_listen(int fd, int flags, fd_h *fh, void *arg)
 	return err;
 }
 
+int fd_listen(int fd, int flags, fd_h *fh, void *arg) {
+	struct re *re = re_get();
+	if (re->fdlh)
+		return re->fdlh(fd, flags, fh, arg);
+	else
+		return fd_listen_int(fd, flags, fh, arg);
+}
 
 /**
  * Stop listening for events on a file descriptor
