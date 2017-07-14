@@ -4,7 +4,6 @@
  * Copyright (C) 2010 Creytiv.com
  */
 
-
 enum {
 #ifndef FD_READ
 	FD_READ   = 1<<0,
@@ -31,7 +30,9 @@ typedef void (fd_h)(int flags, void *arg);
  */
 typedef void (re_signal_h)(int sig);
 
+typedef int   (fd_listen_h)(int fd, int flags, fd_h *fh, void *arg);
 
+void  register_fd_listen_h(fd_listen_h* fdlh);
 int   fd_listen(int fd, int flags, fd_h *fh, void *arg);
 void  fd_close(int fd);
 int   fd_setsize(int maxfds);
@@ -50,6 +51,8 @@ void re_thread_enter(void);
 void re_thread_leave(void);
 
 void re_set_mutex(void *mutexp);
+
+heap_t *tmrh_get(void);
 
 
 /** Polling methods */

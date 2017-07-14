@@ -7,6 +7,7 @@
 #include <re_types.h>
 #include <re_fmt.h>
 #include <re_mem.h>
+#include <re_tmr.h>
 #include <re_main.h>
 #include <re_mqueue.h>
 #include "mqueue.h"

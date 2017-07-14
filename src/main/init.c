@@ -8,6 +8,7 @@
 #include <re_list.h>
 #include <re_net.h>
 #include <re_sys.h>
+#include <re_tmr.h>
 #include <re_main.h>
 #include "main.h"
 
