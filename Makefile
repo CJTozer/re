@@ -44,7 +44,7 @@ LIBDIR  := $(PREFIX)/lib
 endif
 INCDIR  := $(PREFIX)/include/re
 MKDIR   := $(PREFIX)/share/re
-CFLAGS	+= -Iinclude
+CFLAGS	+= -Iinclude -O2
 
 MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
 SHARED  := libre$(LIB_SUFFIX)
