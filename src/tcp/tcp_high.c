@@ -7,6 +7,8 @@
 #include <re_mem.h>
 #include <re_mbuf.h>
 #include <re_tcp.h>
+#include <re_fmt.h>
+#include <re_sa.h>
 
 
 /**
@@ -87,6 +89,51 @@ int tcp_connect(struct tcp_conn **tcp, const struct sa *peer,
 
 	return err;
 }
+
+/**
+ * Make a TCP Connection to a remote peer, binding that connection to a
+ * specific local address.
+ *
+ * @param tcp  Returned TCP Connection object
+ * @param local Network address to use locally
+ * @param peer Network address of peer
+ * @param eh   TCP Connection Established handler
+ * @param rh   TCP Connection Receive data handler
+ * @param ch   TCP Connection close handler
+ * @param arg  Handler argument
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int tcp_bconnect(struct tcp_conn **tcp, const struct sa *local, const struct sa *peer,
+		tcp_estab_h *eh, tcp_recv_h *rh, tcp_close_h *ch, void *arg)
+{
+	struct tcp_conn *tc = NULL;
+	int err;
+
+	if (!tcp || !peer)
+		return EINVAL;
+
+	err = tcp_conn_alloc(&tc, peer, eh,rh, ch, arg);
+	if (err)
+		goto out;
+
+        err = tcp_conn_bind(tc, local);
+	if (err)
+		goto out;
+
+	err = tcp_conn_connect(tc, peer);
+	if (err)
+		goto out;
+
+ out:
+	if (err)
+		tc = mem_deref(tc);
+	else
+		*tcp = tc;
+
+	return err;
+}
+
 
 
 /**
