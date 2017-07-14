@@ -571,6 +571,7 @@ static int conn_send(struct sip_connqent **qentp, struct sip *sip, bool secure,
 {
 	struct sip_conn *conn, *new_conn = NULL;
 	struct sip_connqent *qent;
+	struct sa local_addr;
 	int err = 0;
 
 	conn = conn_find(sip, dst, secure);
@@ -589,7 +590,10 @@ static int conn_send(struct sip_connqent **qentp, struct sip *sip, bool secure,
 	conn->paddr = *dst;
 	conn->sip   = sip;
 
-	err = tcp_connect(&conn->tc, dst, tcp_estab_handler, tcp_recv_handler,
+	sip_transp_laddr(sip, &local_addr, SIP_TRANSP_TCP, NULL);
+	sa_set_port(&local_addr, 0);
+
+	err = tcp_bconnect(&conn->tc, &local_addr, dst, tcp_estab_handler, tcp_recv_handler,
 			  tcp_close_handler, conn);
 	if (err)
 		goto out;
