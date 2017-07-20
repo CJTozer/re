@@ -227,7 +227,7 @@ ifeq ($(OS),solaris)
 	MOD_LFLAGS	+=
 	APP_LFLAGS	+=
 	AR		:= ar
-	AFLAGS		:= cru
+	AFLAGS		:= cr
 endif
 ifeq ($(OS),linux)
 	CFLAGS		+= -fPIC -DLINUX
