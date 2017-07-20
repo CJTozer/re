@@ -68,20 +68,15 @@ void str_ncpy(char *dst, const char *src, size_t n)
 int str_dup_len(char **dst, const char *src, int *dst_len, const int src_len)
 {
 	char *p;
-	size_t sz;
 
 	if (!dst || !src)
 		return EINVAL;
 
-	// Allocate enough memory for the null-terminator.
-	sz = src_len + 1;
-	p = mem_alloc(sz, NULL);
+	p = mem_alloc(src_len, NULL);
 	if (!p)
 		return ENOMEM;
 
-	// Do the copy and add the null-terminator
 	memcpy(p, src, src_len);
-	p[sz-1] = '\0';
 
 	*dst = p;
 	*dst_len = src_len;
