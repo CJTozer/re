@@ -58,7 +58,7 @@ void str_ncpy(char *dst, const char *src, size_t n)
 /**
  * Duplicate a fixed-length string with possible '\0' in middle
  *
- * @param dst Pointer to null-terminated destination string (set on return).
+ * @param dst Pointer to destination string (set on return).
  * @param src Source string
  * @param src_len Source string length
  *
@@ -92,6 +92,7 @@ int str_dup_len(char **dst, const char *src, const int src_len)
  */
 int str_dup(char **dst, const char *src)
 {
+        /* We want to duplicate the null byte, so pass strlen +1 as the length. */
 	return str_dup_len(dst, src, strlen(src) + 1);
 }
 
