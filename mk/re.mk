@@ -227,7 +227,7 @@ ifeq ($(OS),solaris)
 	MOD_LFLAGS	+=
 	APP_LFLAGS	+=
 	AR		:= ar
-	AFLAGS		:= cru
+	AFLAGS		:= cr
 endif
 ifeq ($(OS),linux)
 	CFLAGS		+= -fPIC -DLINUX
@@ -237,7 +237,7 @@ ifeq ($(OS),linux)
 	MOD_LFLAGS	+=
 	APP_LFLAGS	+= -rdynamic
 	AR		:= ar
-	AFLAGS		:= cru
+	AFLAGS		:= cr
 endif
 ifeq ($(OS),darwin)
 	CFLAGS		+= -fPIC -dynamic -DDARWIN
