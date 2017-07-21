@@ -60,12 +60,11 @@ void str_ncpy(char *dst, const char *src, size_t n)
  *
  * @param dst Pointer to null-terminated destination string (set on return).
  * @param src Source string
- * @param dst_len Pointer to destination string length (set on return)
  * @param src_len Source string length
  *
  * @return 0 if success, otherwise errorcode
  */
-int str_dup_len(char **dst, const char *src, int *dst_len, const int src_len)
+int str_dup_len(char **dst, const char *src, const int src_len)
 {
 	char *p;
 
@@ -79,7 +78,6 @@ int str_dup_len(char **dst, const char *src, int *dst_len, const int src_len)
 	memcpy(p, src, src_len);
 
 	*dst = p;
-	*dst_len = src_len;
 
 	return 0;
 }
