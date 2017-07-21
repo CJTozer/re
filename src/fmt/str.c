@@ -92,8 +92,7 @@ int str_dup_len(char **dst, const char *src, const int src_len)
  */
 int str_dup(char **dst, const char *src)
 {
-	int temp_len = 0;
-	return str_dup_len(dst, src, &temp_len, strlen(src) + 1);
+	return str_dup_len(dst, src, strlen(src) + 1);
 }
 
 
