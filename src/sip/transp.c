@@ -235,12 +235,22 @@ static void conn_keepalive_handler(void *arg)
 
 static void sip_recv(struct sip *sip, const struct sip_msg *msg)
 {
-	struct le *le = sip->lsnrl.head;
+    struct le *observer_le = sip->observerl.head;
 
-	while (le) {
-		struct sip_lsnr *lsnr = le->data;
+    while (observer_le) {
+        struct sip_observer *observer = observer_le->data;
 
-		le = le->next;
+        observer_le = observer_le->next;
+
+        observer->msgh(msg, observer->arg);
+    }
+
+	struct le *lsnr_le = sip->lsnrl.head;
+
+	while (lsnr_le) {
+		struct sip_lsnr *lsnr = lsnr_le->data;
+
+		lsnr_le = lsnr_le->next;
 
 		if (msg->req != lsnr->req)
 			continue;

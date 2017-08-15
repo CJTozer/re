@@ -51,7 +51,7 @@ static void destructor(void *arg)
 
 	list_flush(&sip->transpl);
 	list_flush(&sip->lsnrl);
-
+    list_flush(&sip->observerl);
 	mem_deref(sip->software);
 	mem_deref(sip->dnsc);
 	mem_deref(sip->stun);
@@ -68,6 +68,15 @@ static void lsnr_destructor(void *arg)
 	list_unlink(&lsnr->le);
 }
 
+static void observer_destructor(void *arg)
+{
+	struct sip_observer *observer = arg;
+
+	if (observer->observerp)
+		*observer->observerp = NULL;
+
+	list_unlink(&observer->le);
+}
 
 /**
  * Allocate a SIP stack instance
@@ -215,6 +224,41 @@ int sip_listen(struct sip_lsnr **lsnrp, struct sip *sip, bool req,
 }
 
 
+/**
+ * Listen for incoming SIP Requests and SIP Responses
+ * Similar to sip_listen but designed for use in testing
+ *
+ * @param lsnrp Pointer to allocated listener
+ * @param sip   SIP stack instance
+ * @param msgh  SIP message handler
+ * @param arg   Handler argument
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int sip_observe(struct sip_observer **observerp, struct sip *sip,
+	       sip_msg_h_void *msgh, void *arg)
+{
+	struct sip_observer *observer;
+
+	if (!sip || !msgh)
+		return EINVAL;
+
+	observer = mem_zalloc(sizeof(*observer), observer_destructor);
+	if (!observer)
+		return ENOMEM;
+
+	list_append(&sip->observerl, &observer->le, observer);
+
+	observer->msgh = msgh;
+	observer->arg = arg;
+
+	if (observerp) {
+		observer->observerp = observerp;
+		*observerp = observer;
+	}
+
+	return 0;
+}
 /**
  * Print debug information about the SIP stack
  *
