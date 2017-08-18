@@ -261,7 +261,7 @@ static void sip_recv(struct sip *sip, const struct sip_msg *msg)
 
 	if (msg->req) {
 		(void)re_fprintf(stderr, "unhandeled request from %J: %r %r\n",
-				&msg->src, &msg->met, &msg->ruri);
+				 &msg->src, &msg->met, &msg->ruri);
 
 		if (!pl_strcmp(&msg->met, "CANCEL"))
 			(void)sip_reply(sip, msg,
@@ -272,8 +272,8 @@ static void sip_recv(struct sip *sip, const struct sip_msg *msg)
 	}
 	else {
 		(void)re_fprintf(stderr, "unhandeled response from %J:"
-				" %u %r (%r)\n", &msg->src,
-				msg->scode, &msg->reason, &msg->cseq.met);
+				 " %u %r (%r)\n", &msg->src,
+				 msg->scode, &msg->reason, &msg->cseq.met);
 	}
 }
 
