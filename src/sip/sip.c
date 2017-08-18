@@ -51,7 +51,7 @@ static void destructor(void *arg)
 
 	list_flush(&sip->transpl);
 	list_flush(&sip->lsnrl);
-    list_flush(&sip->observerl);
+	list_flush(&sip->observerl);
 	mem_deref(sip->software);
 	mem_deref(sip->dnsc);
 	mem_deref(sip->stun);
@@ -225,10 +225,10 @@ int sip_listen(struct sip_lsnr **lsnrp, struct sip *sip, bool req,
 
 
 /**
- * Listen for incoming SIP Requests and SIP Responses
+ * Register handler to observe incoming SIP messages
  * Similar to sip_listen but designed for use in testing
  *
- * @param lsnrp Pointer to allocated listener
+ * @param observerp Pointer to allocated observer
  * @param sip   SIP stack instance
  * @param msgh  SIP message handler
  * @param arg   Handler argument
@@ -236,7 +236,7 @@ int sip_listen(struct sip_lsnr **lsnrp, struct sip *sip, bool req,
  * @return 0 if success, otherwise errorcode
  */
 int sip_observe(struct sip_observer **observerp, struct sip *sip,
-	       sip_msg_h_void *msgh, void *arg)
+		sip_msg_obs *msgh, void *arg)
 {
 	struct sip_observer *observer;
 

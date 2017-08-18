@@ -232,7 +232,7 @@ struct sip_keepalive;
 struct dnsc;
 
 typedef bool(sip_msg_h)(const struct sip_msg *msg, void *arg);
-typedef void(sip_msg_h_void)(const struct sip_msg *msg, void *arg);
+typedef void(sip_msg_obs)(const struct sip_msg *msg, void *arg);
 typedef int(sip_send_h)(enum sip_transp tp, const struct sa *src,
 			const struct sa *dst, struct mbuf *mb, void *arg);
 typedef void(sip_resp_h)(int err, const struct sip_msg *msg, void *arg);
@@ -253,7 +253,7 @@ void sip_close(struct sip *sip, bool force);
 int  sip_listen(struct sip_lsnr **lsnrp, struct sip *sip, bool req,
 		sip_msg_h *msgh, void *arg);
 int sip_observe(struct sip_observer **observerp, struct sip *sip,
-        sip_msg_h_void *msgh, void *arg);
+        sip_msg_obs *msgh, void *arg);
 int  sip_debug(struct re_printf *pf, const struct sip *sip);
 int  sip_send(struct sip *sip, void *sock, enum sip_transp tp,
 	      const struct sa *dst, struct mbuf *mb);

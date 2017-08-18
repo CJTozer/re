@@ -8,7 +8,7 @@
 struct sip {
 	struct list transpl;
 	struct list lsnrl;
-    struct list observerl;
+	struct list observerl;
 	struct list reql;
 	struct hash *ht_ctrans;
 	struct hash *ht_strans;
@@ -35,7 +35,7 @@ struct sip_lsnr {
 struct sip_observer {
 	struct le le;
 	struct sip_observer **observerp;
-	sip_msg_h_void *msgh;
+	sip_msg_obs *msgh;
 	void *arg;
 };
 
