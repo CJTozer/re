@@ -42,6 +42,8 @@ struct sip_strans {
 	enum state state;
 	uint32_t txc;
 	bool invite;
+	bool reliable;
+	uint32_t relseq;
 };
 
 
@@ -311,6 +313,10 @@ int sip_strans_alloc(struct sip_strans **stp, struct sip *sip,
 	st->arg     = arg;
 	st->sip     = sip;
 
+        if (sip_msg_hdr_has_value(msg, SIP_HDR_SUPPORTED, "100rel")) {
+                st->reliable = true;
+        }
+
 	*stp = st;
 
 	return 0;
@@ -398,6 +404,30 @@ int sip_strans_reply(struct sip_strans **stp, struct sip *sip,
 	return 0;
 }
 
+/**
+ * Make message reliable, if applicable
+ *
+ * @param stp   Pointer to allocated SIP Server Transaction
+ * @param mb    Memory buffer
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int sip_strans_make_reliable(struct sip_strans **stp, struct mbuf *mb)
+{
+	int err = 0;
+	if (stp != NULL && *stp != NULL && (*stp)->reliable) {
+                (*stp)->relseq = rand_u32();
+		/* TODO: store RSeq and state */
+		/* TODO: start timer to retx reliable request */
+		/* TODO: check if already doing reliable */
+		err = mbuf_printf(mb, "Allow: ACK,BYE,CANCEL,INFO,"
+		                      "INVITE,MESSAGE,NOTIFY,OPTIONS,"
+		                      "PRACK,REFER,UPDATE\r\n");
+		err |= mbuf_printf(mb, "Require: 100rel\r\n");
+		err |= mbuf_printf(mb, "RSeq: %d\r\n", (*stp)->relseq);
+	}
+	return err;
+}
 
 int sip_strans_init(struct sip *sip, uint32_t sz)
 {
