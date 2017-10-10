@@ -216,17 +216,6 @@ static void update_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 		return;
 	}
 
-	/* TODO do we need anything like this
-	if (sess->st || sess->awaiting_answer) {
-		(void)sip_treplyf(NULL, NULL, sip, msg, false,
-				  500, "Server Internal Error",
-				  "Retry-After: 5\r\n"
-				  "Content-Length: 0\r\n"
-				  "\r\n");
-		return;
-	}
-	*/
-
 	if (sess->req) {
 		(void)sip_treply(NULL, sip, msg, 491, "Request Pending");
 		return;
@@ -238,9 +227,7 @@ static void update_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 		return;
 	}
 
-	/* TODO do we need this?
 	(void)sip_dialog_update(sess->dlg, msg);
-	*/
 
 	struct sip_contact contact;
 
