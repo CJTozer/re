@@ -109,8 +109,11 @@ static void reinvite_resp_handler(int err, const struct sip_msg *msg,
 static void update_resp_handler(int err, const struct sip_msg *msg,
 				  void *arg)
 {
-	/* TODO call answerh with SDP from response to UPDATE */
-	printf("MTR TODO: update_resp_handler\r\n");
+	struct sipsess *sess = arg;
+
+	if (msg->scode >= 200 && msg->scode < 300) {
+		(void)sess->answerh(msg, sess->arg);
+	}
 }
 
 static int send_handler(enum sip_transp tp, const struct sa *src,
