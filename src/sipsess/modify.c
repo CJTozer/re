@@ -192,6 +192,12 @@ int sipsess_modify(struct sipsess *sess, struct mbuf *desc)
 	if (!sess || sess->st || sess->terminated)
 		return EINVAL;
 
+	/* Only accept modification to SIP session with content
+           before the session is established. Unlike reINVITE,
+           sending UPDATE with no content makes no sense.  */
+	if (!sess->established && !desc)
+		return EINVAL;
+
 	mem_deref(sess->desc);
 	sess->desc = mem_ref(desc);
 
