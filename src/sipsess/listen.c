@@ -253,7 +253,7 @@ static void update_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 	   sdp may have changed in above exchange */
 	sess->desc = mem_deref(sess->desc);
 	sess->modify_pending = false;
-	/* TODO tmr_cancel(&sess->tmr); */
+	tmr_cancel(&sess->tmr);
 	mem_deref(desc);
 }
 
