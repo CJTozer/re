@@ -20,8 +20,10 @@
 void sipsess_prack(struct sipsess *sess, const struct sip_msg *msg)
 {
 	const struct sip_hdr *rseq;
-	/* TODO maybe store RSeq */
-	/* TODO will this do retransmission? */
+	/* PRACK support is limited with no support for retransmissions
+	   The PRACK is sent without being stored or starting a timer.
+	   This would have to be revisited if support for retransmissions
+	   was added. */
 	rseq = sip_msg_hdr(msg, SIP_HDR_RSEQ);
 	if (rseq != NULL) {
 		sip_drequestf(&sess->req, sess->sip, true, "PRACK",

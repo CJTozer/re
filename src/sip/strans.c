@@ -1,7 +1,6 @@
 /**
  * @file strans.c  SIP Server Transaction
  *
- * Copyright (C) 2010 Creytiv.com
  */
 #include <re_types.h>
 #include <re_mem.h>
@@ -417,9 +416,10 @@ int sip_strans_make_reliable(struct sip_strans **stp, struct mbuf *mb)
 	int err = 0;
 	if (stp != NULL && *stp != NULL && (*stp)->reliable) {
 		(*stp)->relseq = rand_u32();
-		/* TODO: store RSeq and state */
-		/* TODO: start timer to retx reliable request */
-		/* TODO: check if already doing reliable */
+		/* For a full implementation with retransmissions we would
+                   need to store the request and start a timer. We would
+                   also need to check if there was an outstanding reliable
+                   request. */
 		err = mbuf_printf(mb, "Allow: ACK,BYE,CANCEL,INFO,"
 		                      "INVITE,MESSAGE,NOTIFY,OPTIONS,"
 		                      "PRACK,REFER,UPDATE\r\n");

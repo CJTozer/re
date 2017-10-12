@@ -186,13 +186,14 @@ static void ack_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 
 static void prack_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 {
-	/* TODO consider notifying application
-	   This would definitely be required if the PRACK carried SDP
-	   but we don't support that yet
-	   TODO review if stateless reply is correct. We don't want stateful
-	   reply using the INVITE transaction but maybe we should be stateful
-	   using the PRACK transaction
-	*/
+	/* For a full implementation supporting an SDP offer on the PRACK we
+	   would need to call the application (via offerh) to get an
+	   answer to include in the 200 OK to the PRACK.  This is not
+	   needed to support the normal precondition sequence.
+	   The implementation here uses a statelss reply to avoid interfering
+	   with the original INVITE transaction that is still outstanding ati
+	   this point. This would need revisiting if full support for
+	   retransmissions was added */
 
 	sip_reply(sock->sip, msg, 200, "OK");
 }
@@ -231,9 +232,11 @@ static void update_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 
 	struct sip_contact contact;
 
-	/* TODO review if stateless reply is good enough - probably
-	should be stateful reply on the UPDATE transaction */
-	sip_contact_set(&contact, sess->cuser, &msg->dst, msg->tp);
+	/* Implementation of UPDATE is limited with no support for
+	   retransmissions. The reply to the UPDATE is statelss to avoid
+	   interfering with the original INVITE transaction which is still
+	   outstanding at this point. This would need revisiting if full
+	   support for retransmissions was added. */
 	(void)sip_replyf(sess->sip, msg, 200, "OK",
 			 "%H"
 			 "%s%s%s"
