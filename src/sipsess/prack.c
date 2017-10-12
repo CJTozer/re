@@ -1,7 +1,6 @@
 /**
  * @file prack.c  SIP Session PRACK
  *
- * Copyright (C) 2010 Creytiv.com
  */
 #include <re_types.h>
 #include <re_mem.h>
