@@ -196,8 +196,8 @@ int sipsess_modify(struct sipsess *sess, struct mbuf *desc)
 		return EINVAL;
 
 	/* Only accept modification to SIP session with content
-           before the session is established. Unlike reINVITE,
-           sending UPDATE with no content makes no sense.  */
+	   before the session is established. Unlike reINVITE,
+	   sending UPDATE with no content makes no sense.  */
 	if (!sess->established && !desc)
 		return EINVAL;
 

@@ -25,11 +25,11 @@ void sipsess_prack(struct sipsess *sess, const struct sip_msg *msg)
 	rseq = sip_msg_hdr(msg, SIP_HDR_RSEQ);
 	if (rseq != NULL) {
 		sip_drequestf(&sess->req, sess->sip, true, "PRACK",
-		              sess->dlg, 0, sess->auth,
-		              NULL, NULL, sess,
-		              "RAck: %b %u %b\r\n"
-		              "Content-Length: 0\r\n"
-		              "\r\n",
-		              rseq->val, msg->cseq.num, msg->cseq.met);
+			      sess->dlg, 0, sess->auth,
+			      NULL, NULL, sess,
+			      "RAck: %b %u %b\r\n"
+			      "Content-Length: 0\r\n"
+			      "\r\n",
+			      rseq->val, msg->cseq.num, msg->cseq.met);
 	}
 }

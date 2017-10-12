@@ -235,19 +235,18 @@ static void update_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 	should be stateful reply on the UPDATE transaction */
 	sip_contact_set(&contact, sess->cuser, &msg->dst, msg->tp);
 	(void)sip_replyf(sess->sip, msg, 200, "OK",
-                         "%H"
-                         "%s%s%s"
-                         "Content-Length: %zu\r\n"
-                         "\r\n"
-                         "%b",
-                         sip_contact_print, &contact,
-                         desc ? "Content-Type: " : "",
-                         desc ? sess->ctype : "",
-                         desc ? "\r\n" : "",
-                         desc ? mbuf_get_left(desc) : (size_t)0,
-                         desc ? mbuf_buf(desc) : NULL,
-                         desc ? mbuf_get_left(desc) : (size_t)0);
-
+			 "%H"
+			 "%s%s%s"
+			 "Content-Length: %zu\r\n"
+			 "\r\n"
+			 "%b",
+			 sip_contact_print, &contact,
+			 desc ? "Content-Type: " : "",
+			 desc ? sess->ctype : "",
+			 desc ? "\r\n" : "",
+			 desc ? mbuf_get_left(desc) : (size_t)0,
+			 desc ? mbuf_buf(desc) : NULL,
+			 desc ? mbuf_get_left(desc) : (size_t)0);
 
 	/* pending modifications considered outdated;
 	   sdp may have changed in above exchange */

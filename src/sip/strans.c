@@ -313,9 +313,9 @@ int sip_strans_alloc(struct sip_strans **stp, struct sip *sip,
 	st->arg     = arg;
 	st->sip     = sip;
 
-        if (sip_msg_hdr_has_value(msg, SIP_HDR_SUPPORTED, "100rel")) {
-                st->reliable = true;
-        }
+	if (sip_msg_hdr_has_value(msg, SIP_HDR_SUPPORTED, "100rel")) {
+		st->reliable = true;
+	}
 
 	*stp = st;
 
@@ -416,7 +416,7 @@ int sip_strans_make_reliable(struct sip_strans **stp, struct mbuf *mb)
 {
 	int err = 0;
 	if (stp != NULL && *stp != NULL && (*stp)->reliable) {
-                (*stp)->relseq = rand_u32();
+		(*stp)->relseq = rand_u32();
 		/* TODO: store RSeq and state */
 		/* TODO: start timer to retx reliable request */
 		/* TODO: check if already doing reliable */
