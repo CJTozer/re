@@ -231,6 +231,7 @@ static void update_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 	(void)sip_dialog_update(sess->dlg, msg);
 
 	struct sip_contact contact;
+	sip_contact_set(&contact, sess->cuser, &msg->dst, msg->tp);
 
 	/* Implementation of UPDATE is limited with no support for
 	   retransmissions. The reply to the UPDATE is statelss to avoid
