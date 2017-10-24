@@ -322,6 +322,8 @@ int sip_ctrans_request(struct sip_ctrans **ctp, struct sip *sip,
 	if (!ct)
 		return ENOMEM;
 
+	tmr_init(&ct->tmr);
+	tmr_init(&ct->tmre);
 	hash_append(sip->ht_ctrans, hash_joaat_str(branch), &ct->he, ct);
 
 	ct->invite = !strcmp(met, "INVITE");

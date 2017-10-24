@@ -321,6 +321,7 @@ int sipevent_accept(struct sipnot **notp, struct sipevent_sock *sock,
 	not = mem_zalloc(sizeof(*not), destructor);
 	if (!not)
 		return ENOMEM;
+	tmr_init(&not->tmr);
 
 	if (!pl_strcmp(&msg->met, "REFER")) {
 
