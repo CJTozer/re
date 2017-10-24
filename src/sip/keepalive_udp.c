@@ -169,6 +169,7 @@ int  sip_keepalive_udp(struct sip_keepalive *ka, struct sip *sip,
 		uc = mem_zalloc(sizeof(*uc), destructor);
 		if (!uc)
 			return ENOMEM;
+		tmr_init(&uc->tmr_ka);
 
 		hash_append(sip->ht_udpconn, sa_hash(paddr, SA_ALL),
 			    &uc->he, uc);

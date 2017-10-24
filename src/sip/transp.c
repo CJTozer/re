@@ -538,6 +538,8 @@ static void tcp_connect_handler(const struct sa *paddr, void *arg)
 		err = ENOMEM;
 		goto out;
 	}
+	tmr_init(&conn->tmr);
+	tmr_init(&conn->tmr_ka);
 
 	hash_append(transp->sip->ht_conn, sa_hash(paddr, SA_ALL),
 		    &conn->he, conn);
@@ -595,6 +597,8 @@ static int conn_send(struct sip_connqent **qentp, struct sip *sip, bool secure,
 	new_conn = conn = mem_zalloc(sizeof(*conn), conn_destructor);
 	if (!conn)
 		return ENOMEM;
+	tmr_init(&conn->tmr);
+	tmr_init(&conn->tmr_ka);
 
 	hash_append(sip->ht_conn, sa_hash(dst, SA_ALL), &conn->he, conn);
 	conn->paddr = *dst;

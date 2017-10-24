@@ -171,6 +171,7 @@ int sipsess_alloc(struct sipsess **sessp, struct sipsess_sock *sock,
 	sess = mem_zalloc(sizeof(*sess), destructor);
 	if (!sess)
 		return ENOMEM;
+	tmr_init(&sess->tmr);
 
 	err = sip_auth_alloc(&sess->auth, authh, aarg, aref);
 	if (err)

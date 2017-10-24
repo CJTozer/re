@@ -376,6 +376,7 @@ static int sipsub_alloc(struct sipsub **subp, struct sipevent_sock *sock,
 	sub = mem_zalloc(sizeof(*sub), destructor);
 	if (!sub)
 		return ENOMEM;
+	tmr_init(&sub->tmr);
 
 	if (dlg) {
 		sub->dlg = mem_ref(dlg);
@@ -627,6 +628,7 @@ int sipevent_fork(struct sipsub **subp, struct sipsub *osub,
 	sub = mem_zalloc(sizeof(*sub), destructor);
 	if (!sub)
 		return ENOMEM;
+	tmr_init(&sub->tmr);
 
 	err = sip_dialog_fork(&sub->dlg, osub->dlg, msg);
 	if (err)

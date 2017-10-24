@@ -297,6 +297,8 @@ int sip_strans_alloc(struct sip_strans **stp, struct sip *sip,
 	st = mem_zalloc(sizeof(*st), destructor);
 	if (!st)
 		return ENOMEM;
+	tmr_init(&st->tmr);
+	tmr_init(&st->tmrg);
 
 	hash_append(sip->ht_strans, hash_joaat_pl(&msg->via.branch),
 		    &st->he, st);
