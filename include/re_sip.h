@@ -297,6 +297,7 @@ int  sip_strans_alloc(struct sip_strans **stp, struct sip *sip,
 int  sip_strans_reply(struct sip_strans **stp, struct sip *sip,
 		      const struct sip_msg *msg, const struct sa *dst,
 		      uint16_t scode, struct mbuf *mb);
+int  sip_strans_make_reliable(struct sip_strans **stp, struct mbuf *mb);
 int  sip_treplyf(struct sip_strans **stp, struct mbuf **mbp, struct sip *sip,
 		 const struct sip_msg *msg, bool rec_route, uint16_t scode,
 		 const char *reason, const char *fmt, ...);

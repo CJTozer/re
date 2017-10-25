@@ -184,6 +184,82 @@ static void ack_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
 		sess->estabh(msg, sess->arg);
 }
 
+static void prack_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
+{
+	/* For a full implementation supporting an SDP offer on the PRACK we
+	   would need to call the application (via offerh) to get an
+	   answer to include in the 200 OK to the PRACK.  This is not
+	   needed to support the normal precondition sequence.
+	   The implementation here uses a statelss reply to avoid interfering
+	   with the original INVITE transaction that is still outstanding ati
+	   this point. This would need revisiting if full support for
+	   retransmissions was added */
+
+	sip_reply(sock->sip, msg, 200, "OK");
+}
+
+static void update_handler(struct sipsess_sock *sock, const struct sip_msg *msg)
+{
+	struct sip *sip = sock->sip;
+	struct sipsess *sess;
+	struct mbuf *desc;
+	char m[256];
+	int err;
+
+	sess = sipsess_find(sock, msg);
+	if (!sess || sess->terminated) {
+		(void)sip_treply(NULL, sip, msg, 481, "Call Does Not Exist");
+		return;
+	}
+
+	if (!sip_dialog_rseq_valid(sess->dlg, msg)) {
+		(void)sip_treply(NULL, sip, msg, 500, "Server Internal Error");
+		return;
+	}
+
+	if (sess->req) {
+		(void)sip_treply(NULL, sip, msg, 491, "Request Pending");
+		return;
+	}
+
+	err = sess->offerh(&desc, msg, sess->arg);
+	if (err) {
+		(void)sip_reply(sip, msg, 488, str_error(err, m, sizeof(m)));
+		return;
+	}
+
+	(void)sip_dialog_update(sess->dlg, msg);
+
+	struct sip_contact contact;
+	sip_contact_set(&contact, sess->cuser, &msg->dst, msg->tp);
+
+	/* Implementation of UPDATE is limited with no support for
+	   retransmissions. The reply to the UPDATE is statelss to avoid
+	   interfering with the original INVITE transaction which is still
+	   outstanding at this point. This would need revisiting if full
+	   support for retransmissions was added. */
+	(void)sip_replyf(sess->sip, msg, 200, "OK",
+			 "%H"
+			 "%s%s%s"
+			 "Content-Length: %zu\r\n"
+			 "\r\n"
+			 "%b",
+			 sip_contact_print, &contact,
+			 desc ? "Content-Type: " : "",
+			 desc ? sess->ctype : "",
+			 desc ? "\r\n" : "",
+			 desc ? mbuf_get_left(desc) : (size_t)0,
+			 desc ? mbuf_buf(desc) : NULL,
+			 desc ? mbuf_get_left(desc) : (size_t)0);
+
+	/* pending modifications considered outdated;
+	   sdp may have changed in above exchange */
+	sess->desc = mem_deref(sess->desc);
+	sess->modify_pending = false;
+	tmr_cancel(&sess->tmr);
+	mem_deref(desc);
+}
+
 
 static void reinvite_handler(struct sipsess_sock *sock,
 			     const struct sip_msg *msg)
@@ -276,6 +352,14 @@ static bool request_handler(const struct sip_msg *msg, void *arg)
 			return false;
 
 		refer_handler(sock, msg);
+		return true;
+	}
+	else if (!pl_strcmp(&msg->met, "PRACK")) {
+		prack_handler(sock, msg);
+		return true;
+	}
+	else if (!pl_strcmp(&msg->met, "UPDATE")) {
+		update_handler(sock, msg);
 		return true;
 	}
 

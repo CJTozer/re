@@ -106,6 +106,16 @@ static void reinvite_resp_handler(int err, const struct sip_msg *msg,
 }
 
 
+static void update_resp_handler(int err, const struct sip_msg *msg,
+				  void *arg)
+{
+	struct sipsess *sess = arg;
+
+	if (msg->scode >= 200 && msg->scode < 300) {
+		(void)sess->answerh(msg, sess->arg);
+	}
+}
+
 static int send_handler(enum sip_transp tp, const struct sa *src,
 			const struct sa *dst, struct mbuf *mb, void *arg)
 {
@@ -145,6 +155,32 @@ int sipsess_reinvite(struct sipsess *sess, bool reset_ls)
 			     sess->desc ? mbuf_get_left(sess->desc):(size_t)0);
 }
 
+int sipsess_update(struct sipsess *sess, bool reset_ls)
+{
+	if (sess->req)
+		return EPROTO;
+
+	sess->sent_offer = sess->desc ? true : false;
+	sess->modify_pending = false;
+
+	if (reset_ls)
+		sip_loopstate_reset(&sess->ls);
+
+	return sip_drequestf(&sess->req, sess->sip, true, "UPDATE",
+			     sess->dlg, 0, sess->auth,
+			     send_handler, update_resp_handler, sess,
+			     "%s%s%s"
+			     "Content-Length: %zu\r\n"
+			     "\r\n"
+			     "%b",
+			     sess->desc ? "Content-Type: " : "",
+			     sess->desc ? sess->ctype : "",
+			     sess->desc ? "\r\n" : "",
+			     sess->desc ? mbuf_get_left(sess->desc) :(size_t)0,
+			     sess->desc ? mbuf_buf(sess->desc) : NULL,
+			     sess->desc ? mbuf_get_left(sess->desc):(size_t)0);
+}
+
 
 /**
  * Modify an established SIP Session sending Re-INVITE or UPDATE
@@ -159,6 +195,12 @@ int sipsess_modify(struct sipsess *sess, struct mbuf *desc)
 	if (!sess || sess->st || sess->terminated)
 		return EINVAL;
 
+	/* Only accept modification to SIP session with content
+	   before the session is established. Unlike reINVITE,
+	   sending UPDATE with no content makes no sense.  */
+	if (!sess->established && !desc)
+		return EINVAL;
+
 	mem_deref(sess->desc);
 	sess->desc = mem_ref(desc);
 
@@ -166,6 +208,8 @@ int sipsess_modify(struct sipsess *sess, struct mbuf *desc)
 		sess->modify_pending = true;
 		return 0;
 	}
-
-	return sipsess_reinvite(sess, true);
+	if (sess->established)
+		return sipsess_reinvite(sess, true);
+	else
+		return sipsess_update(sess, true);
 }

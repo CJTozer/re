@@ -103,6 +103,10 @@ static int vreplyf(struct sip_strans **stp, struct mbuf **mbp, bool trans,
 	if (sip->software)
 		err |= mbuf_printf(mb, "Server: %s\r\n", sip->software);
 
+	if (scode == 183) {
+		err |= sip_strans_make_reliable(stp, mb);
+	}
+
 	if (fmt)
 		err |= mbuf_vprintf(mb, fmt, ap);
 	else

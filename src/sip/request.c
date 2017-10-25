@@ -814,6 +814,11 @@ int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
 
 	err = mbuf_write_str(mb, "Max-Forwards: 70\r\n");
 
+	err |= mbuf_write_str(mb, "Supported: 100rel\r\n");
+
+	err |= mbuf_write_str(mb, "Allow: ACK,BYE,CANCEL,INFO,INVITE,MESSAGE,"
+                                  "NOTIFY,OPTIONS,PRACK,REFER,UPDATE\r\n");
+
 	if (auth)
 		err |= sip_auth_encode(mb, auth, met, sip_dialog_uri(dlg));
 

@@ -35,6 +35,14 @@ static int send_handler(enum sip_transp tp, const struct sa *src,
 }
 
 
+static void progress_handler(struct sipsess *sess, const struct sip_msg *msg)
+{
+	if (sip_msg_hdr_has_value(msg, SIP_HDR_REQUIRE, "100rel")) {
+		sipsess_prack(sess, msg);
+	}
+	sess->progrh(msg, sess->arg);
+}
+
 static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg)
 {
 	struct sipsess *sess = arg;
@@ -44,14 +52,21 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg)
 		goto out;
 
 	if (msg->scode < 200) {
-		sess->progrh(msg, sess->arg);
+		if (msg->scode > 100 && !sip_dialog_established(sess->dlg)) {
+			err = sip_dialog_create(sess->dlg, msg);
+		}
+		if (err)
+			goto out;
+		progress_handler(sess, msg);
 		return;
 	}
 	else if (msg->scode < 300) {
 
 		sess->hdrs = mem_deref(sess->hdrs);
 
-		err = sip_dialog_create(sess->dlg, msg);
+		if (!sip_dialog_established(sess->dlg)) {
+			err = sip_dialog_create(sess->dlg, msg);
+		}
 		if (err)
 			goto out;
 
@@ -119,14 +134,16 @@ static void invite_resp_handler(int err, const struct sip_msg *msg, void *arg)
 	}
 
  out:
-    // The session has ended - call terminate processing (if we haven't already) or destroy the session.
+	/* The session has ended - call terminate processing (if we haven't
+	   already) or destroy the session. */
 	if (!sess->terminated)
 		sipsess_terminate(sess, err, msg);
 	else
 	{
-	    // Call close handler to close the session.
-	    // If we cancelled the session then the terminated flag will already be set,
-	    // but we'll have never seen this 487, so call the close handler now with the 487.
+		/* Call close handler to close the session.
+		   If we cancelled the session then the terminated flag will
+		   already be set, but we'll have never seen this 487, so call
+		   the close handler now with the 487. */
 		sess->closeh(err, msg, sess->arg);
 		mem_deref(sess);
 	}
