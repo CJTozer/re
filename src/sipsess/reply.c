@@ -88,6 +88,8 @@ int sipsess_reply_2xx(struct sipsess *sess, const struct sip_msg *msg,
 	reply = mem_zalloc(sizeof(*reply), destructor);
 	if (!reply)
 		goto out;
+	tmr_init(&reply->tmr);
+	tmr_init(&reply->tmrg);
 
 	list_append(&sess->replyl, &reply->le, reply);
 	reply->seq  = msg->cseq.num;

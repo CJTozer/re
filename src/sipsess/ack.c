@@ -87,6 +87,7 @@ int sipsess_ack(struct sipsess_sock *sock, struct sip_dialog *dlg,
 	ack = mem_zalloc(sizeof(*ack), destructor);
 	if (!ack)
 		return ENOMEM;
+	tmr_init(&ack->tmr);
 
 	hash_append(sock->ht_ack,
 		    hash_joaat_str(sip_dialog_callid(dlg)),
