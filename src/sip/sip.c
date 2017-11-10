@@ -189,7 +189,9 @@ int sip_send(struct sip *sip, void *sock, enum sip_transp tp,
 /**
  * Listen for incoming SIP Requests and SIP Responses
  *
- * @param lsnrp Pointer to allocated listener
+ * @param lsnrp Pointer to allocated listener (optional). If provided it MUST
+ *              remain valid until the listener is destructed to allow it to
+ *              be set to NULL.
  * @param sip   SIP stack instance
  * @param req   True for Request, false for Response
  * @param msgh  SIP message handler
@@ -228,10 +230,12 @@ int sip_listen(struct sip_lsnr **lsnrp, struct sip *sip, bool req,
  * Register handler to observe incoming SIP messages
  * Similar to sip_listen but designed for use in testing
  *
- * @param observerp Pointer to allocated observer
- * @param sip   SIP stack instance
- * @param msgh  SIP message handler
- * @param arg   Handler argument
+ * @param observerp Pointer to allocated observer (optional). If provided it
+ *                  MUST remain valid until the observer is destructed to
+ *                  allow it to be set to NULL.
+ * @param sip       SIP stack instance
+ * @param msgh      SIP message handler
+ * @param arg       Handler argument
  *
  * @return 0 if success, otherwise errorcode
  */
