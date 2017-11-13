@@ -577,7 +577,9 @@ static int addr_lookup(struct sip_request *req, const char *name)
 /**
  * Send a SIP request
  *
- * @param reqp     Pointer to allocated SIP request object
+ * @param reqp     Pointer to allocated SIP request object (optional). If
+ *                 provided it must remain valid until after the request is
+ *                 destructed to allow it to be set to NULL.
  * @param sip      SIP Stack
  * @param stateful Stateful client transaction
  * @param met      SIP Method string
@@ -707,7 +709,9 @@ int sip_request(struct sip_request **reqp, struct sip *sip, bool stateful,
 /**
  * Send a SIP request with formatted arguments
  *
- * @param reqp     Pointer to allocated SIP request object
+ * @param reqp     Pointer to allocated SIP request object (optional). If
+ *                 provided it MUST remain valid until after the request
+ *                 has been destructed to allow it to be set to NULL.
  * @param sip      SIP Stack
  * @param stateful Stateful client transaction
  * @param met      Null-terminated SIP Method string
