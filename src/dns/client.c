@@ -524,7 +524,7 @@ static int send_tcp(struct dns_query *q)
 
 		srv = &q->srvv[q->ntx++];
 
-		DEBUG_NOTICE("trying tcp server#%u: %J\n", q->ntx-1, srv);
+		//DEBUG_NOTICE("trying tcp server#%u: %J\n", q->ntx-1, srv);
 
 		tc = list_ledata(hash_lookup(q->dnsc->ht_tcpconn,
 					     sa_hash(srv, SA_ALL),
@@ -546,7 +546,7 @@ static int send_tcp(struct dns_query *q)
 
 			tmr_start(&tc->tmr, tc->dnsc->conf.idle_timeout,
 				  tcpconn_timeout_handler, tc);
-			DEBUG_NOTICE("tcp send %J\n", srv);
+			//DEBUG_NOTICE("tcp send %J\n", srv);
 		}
 
 		list_append(&tc->ql, &q->le_tc, q);
@@ -753,7 +753,7 @@ int dnsc_query(struct dns_query **qp, struct dnsc *dnsc, const char *name,
 		return EINVAL;
 
 	return query(qp, dnsc, DNS_OPCODE_QUERY, name, type, dnsclass, NULL,
-		     IPPROTO_UDP, dnsc->srvv, &dnsc->srvc, false, rd, qh, arg);
+		     IPPROTO_TCP, dnsc->srvv, &dnsc->srvc, false, rd, qh, arg);
 }
 
 
