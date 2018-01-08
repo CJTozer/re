@@ -546,7 +546,7 @@ static int send_tcp(struct dns_query *q)
 
 			tmr_start(&tc->tmr, tc->dnsc->conf.idle_timeout,
 				  tcpconn_timeout_handler, tc);
-			DEBUG_NOTICE("tcp send %J\n", srv);
+			//DEBUG_NOTICE("tcp send %J\n", srv);
 		}
 
 		list_append(&tc->ql, &q->le_tc, q);
