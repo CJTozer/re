@@ -213,9 +213,9 @@ static int request_next(struct sip_request *req)
 	int err;
 
  again:
-	rr = list_ledata(req->addrl.head);
+	rr = list_ledata(list_random(&req->addrl));
 	if (!rr) {
-		rr = list_ledata(req->srvl.head);
+		rr = list_ledata(list_random(&req->srvl));
 		if (!rr)
 			return ENOENT;
 
