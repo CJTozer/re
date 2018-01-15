@@ -344,7 +344,7 @@ struct le *list_tail(const struct list *list)
  *
  * @param list  Linked list
  *
- * @return Last list element (NULL if empty)
+ * @return Random list element (NULL if empty)
  */
 struct le *list_random(const struct list *list)
 {
@@ -352,6 +352,7 @@ struct le *list_random(const struct list *list)
 
 	if (!list)
 		return NULL;
+
 	uint32_t lc = list_count(list);
 	if (lc == 0)
 		return NULL;
