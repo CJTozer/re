@@ -64,6 +64,7 @@ struct le *list_apply(const struct list *list, bool fwd, list_apply_h *ah,
 		      void *arg);
 struct le *list_head(const struct list *list);
 struct le *list_tail(const struct list *list);
+struct le *list_random(const struct list *list);
 uint32_t list_count(const struct list *list);
 
 
