@@ -823,7 +823,7 @@ static int sip_drequestf_common(struct sip_request **reqp, struct sip *sip, bool
 	mb->pos = 0;
 
 	err = sip_request(reqp, sip, stateful, met, -1, sip_dialog_uri(dlg),
-			  -1, sip_dialog_route(dlg), mb, sip_dialog_hash(dlg),
+			  -1, route, mb, sip_dialog_hash(dlg),
 			  sendh, resph, arg);
 	if (err)
 		goto out;
