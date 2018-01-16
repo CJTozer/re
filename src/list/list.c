@@ -6,7 +6,6 @@
 #include <re_types.h>
 #include <re_list.h>
 #include <re_mem.h>
-#include <stdlib.h>
 
 
 #define DEBUG_MODULE "list"
@@ -339,30 +338,6 @@ struct le *list_tail(const struct list *list)
 	return list ? list->tail : NULL;
 }
 
-/**
- * Get a random element in a linked list
- *
- * @param list  Linked list
- *
- * @return Random list element (NULL if empty)
- */
-struct le *list_random(const struct list *list)
-{
-	struct le *le;
-
-	if (!list)
-		return NULL;
-
-	uint32_t lc = list_count(list);
-	if (lc == 0)
-		return NULL;
-
-	uint32_t n = rand() % lc;
-	for (le = list->head; n != 0; le = le->next)
-		--n;
-
-	return le;
-}
 
 /**
  * Get the number of elements in a linked list

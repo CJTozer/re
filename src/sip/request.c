@@ -213,9 +213,9 @@ static int request_next(struct sip_request *req)
 	int err;
 
  again:
-	rr = list_ledata(list_random(&req->addrl));
+	rr = list_ledata(req->addrl.head);
 	if (!rr) {
-		rr = list_ledata(list_random(&req->srvl));
+		rr = list_ledata(req->srvl.head);
 		if (!rr)
 			return ENOENT;
 
@@ -689,7 +689,7 @@ int sip_request(struct sip_request **reqp, struct sip *sip, bool stateful,
 		err = srv_lookup(req, req->host);
 	}
 	else {
-	        err = dnsc_query(&req->dnsq, sip->dnsc, req->host,
+		err = dnsc_query(&req->dnsq, sip->dnsc, req->host,
 				 DNS_TYPE_NAPTR, DNS_CLASS_IN, true,
 				 naptr_handler, req);
 	}
@@ -782,31 +782,14 @@ int sip_requestf(struct sip_request **reqp, struct sip *sip, bool stateful,
 	return err;
 }
 
-
-/**
- * Send a SIP dialog request with formatted arguments
- *
- * @param reqp     Pointer to allocated SIP request object
- * @param sip      SIP Stack
- * @param stateful Stateful client transaction
- * @param met      Null-terminated SIP Method string
- * @param dlg      SIP Dialog state
- * @param cseq     CSeq number
- * @param auth     SIP authentication state
- * @param sendh    Send handler
- * @param resph    Response handler
- * @param arg      Handler argument
- * @param fmt      Formatted SIP headers and body
- *
- * @return 0 if success, otherwise errorcode
- */
-int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
-		  const char *met, struct sip_dialog *dlg, uint32_t cseq,
-		  struct sip_auth *auth, sip_send_h *sendh, sip_resp_h *resph,
-		  void *arg, const char *fmt, ...)
+static int sip_drequestf_common(struct sip_request **reqp, struct sip *sip,
+				bool stateful, const char *met,
+				struct sip_dialog *dlg,
+				const struct uri *route, uint32_t cseq,
+				struct sip_auth *auth, sip_send_h *sendh,
+				sip_resp_h *resph, void *arg, const char *fmt)
 {
 	struct mbuf *mb;
-	va_list ap;
 	int err;
 
 	if (!sip || !met || !dlg || !fmt)
@@ -834,9 +817,7 @@ int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
 	if (err)
 		goto out;
 
-	va_start(ap, fmt);
-	err = mbuf_vprintf(mb, fmt, ap);
-	va_end(ap);
+	err = mbuf_write_str(mb, fmt);
 
 	if (err)
 		goto out;
@@ -852,6 +833,94 @@ int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
  out:
 	mem_deref(mb);
 
+	return err;
+}
+
+
+/**
+ * Send a SIP dialog request with formatted arguments
+ *
+ * @param reqp     Pointer to allocated SIP request object
+ * @param sip      SIP Stack
+ * @param stateful Stateful client transaction
+ * @param met      Null-terminated SIP Method string
+ * @param dlg      SIP Dialog state
+ * @param cseq     CSeq number
+ * @param auth     SIP authentication state
+ * @param sendh    Send handler
+ * @param resph    Response handler
+ * @param arg      Handler argument
+ * @param fmt      Formatted SIP headers and body
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+		  const char *met, struct sip_dialog *dlg, uint32_t cseq,
+		  struct sip_auth *auth, sip_send_h *sendh, sip_resp_h *resph,
+		  void *arg, const char *fmt, ...)
+{
+	char* fmt_str = NULL;
+	va_list ap;
+	int err;
+
+	va_start(ap, fmt);
+	err = re_vsdprintf(&fmt_str, fmt, ap);
+	va_end(ap);
+
+	if (err)
+		goto out;
+
+	err = sip_drequestf_common(reqp, sip, stateful, met, dlg,
+				   sip_dialog_route(dlg), cseq, auth, sendh,
+				   resph, arg, fmt_str);
+ out:
+	mem_deref(fmt_str);
+	return err;
+}
+
+
+/**
+ * Send a SIP dialog request with formatted arguments, but to a specific
+ * target
+ *
+ * @param reqp     Pointer to allocated SIP request object
+ * @param sip      SIP Stack
+ * @param stateful Stateful client transaction
+ * @param met      Null-terminated SIP Method string
+ * @param dlg      SIP Dialog state
+ * @param route    Next hop route URI
+ * @param cseq     CSeq number
+ * @param auth     SIP authentication state
+ * @param sendh    Send handler
+ * @param resph    Response handler
+ * @param arg      Handler argument
+ * @param fmt      Formatted SIP headers and body
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int sip_drequestf_targeted(struct sip_request **reqp, struct sip *sip,
+			   bool stateful, const char *met,
+			   struct sip_dialog *dlg, const struct uri *route,
+			   uint32_t cseq, struct sip_auth *auth,
+			   sip_send_h *sendh, sip_resp_h *resph, void *arg,
+			   const char *fmt, ...)
+{
+	char* fmt_str = NULL;
+	va_list ap;
+	int err;
+
+	va_start(ap, fmt);
+	err = re_vsdprintf(&fmt_str, fmt, ap);
+	va_end(ap);
+
+	if (err)
+		goto out;
+
+	err = sip_drequestf_common(reqp, sip, stateful, met, dlg, route, cseq,
+				   auth, sendh, resph, arg, fmt_str);
+out:
+	if (fmt_str)
+		mem_deref(fmt_str);
 	return err;
 }
 
