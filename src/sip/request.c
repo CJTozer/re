@@ -689,7 +689,7 @@ int sip_request(struct sip_request **reqp, struct sip *sip, bool stateful,
 		err = srv_lookup(req, req->host);
 	}
 	else {
-	        err = dnsc_query(&req->dnsq, sip->dnsc, req->host,
+		err = dnsc_query(&req->dnsq, sip->dnsc, req->host,
 				 DNS_TYPE_NAPTR, DNS_CLASS_IN, true,
 				 naptr_handler, req);
 	}
@@ -782,10 +782,12 @@ int sip_requestf(struct sip_request **reqp, struct sip *sip, bool stateful,
 	return err;
 }
 
-static int sip_drequestf_common(struct sip_request **reqp, struct sip *sip, bool stateful,
-		  const char *met, struct sip_dialog *dlg, const struct uri *route, uint32_t cseq,
-		  struct sip_auth *auth, sip_send_h *sendh, sip_resp_h *resph,
-		  void *arg, const char *fmt)
+static int sip_drequestf_common(struct sip_request **reqp, struct sip *sip,
+				bool stateful, const char *met,
+				struct sip_dialog *dlg,
+				const struct uri *route, uint32_t cseq,
+				struct sip_auth *auth, sip_send_h *sendh,
+				sip_resp_h *resph, void *arg, const char *fmt)
 {
 	struct mbuf *mb;
 	int err;
@@ -903,7 +905,7 @@ int sip_drequestf_targeted(struct sip_request **reqp, struct sip *sip,
 			   sip_send_h *sendh, sip_resp_h *resph, void *arg,
 			   const char *fmt, ...)
 {
-	char* fmt_str;
+	char* fmt_str = NULL;
 	va_list ap;
 	int err;
 
@@ -917,7 +919,8 @@ int sip_drequestf_targeted(struct sip_request **reqp, struct sip *sip,
 	err = sip_drequestf_common(reqp, sip, stateful, met, dlg, route, cseq,
 				   auth, sendh, resph, arg, fmt_str);
 out:
-	mem_deref(fmt_str);
+	if (fmt_str)
+		mem_deref(fmt_str);
 	return err;
 }
 
