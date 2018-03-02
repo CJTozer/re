@@ -16,7 +16,8 @@
 #include <re_sipsess.h>
 #include "sipsess.h"
 
-void sipsess_prack(struct sipsess *sess, const struct sip_msg *msg)
+void sipsess_prack(struct sipsess *sess, const struct sip_msg *msg,
+				   sip_resp_h *resph)
 {
 	const struct sip_hdr *rseq;
 	/* PRACK support is limited with no support for retransmissions
@@ -27,7 +28,7 @@ void sipsess_prack(struct sipsess *sess, const struct sip_msg *msg)
 	if (rseq != NULL) {
 		sip_drequestf(&sess->req, sess->sip, true, "PRACK",
 			      sess->dlg, 0, sess->auth,
-			      NULL, NULL, sess,
+			      NULL, resph, sess,
 			      "RAck: %b %u %b\r\n"
 			      "Content-Length: 0\r\n"
 			      "\r\n",

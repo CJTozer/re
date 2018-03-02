@@ -34,11 +34,24 @@ static int send_handler(enum sip_transp tp, const struct sa *src,
 	return mbuf_printf(mb, "%H", sip_contact_print, &contact);
 }
 
+static void prack_resp_handler(int err, const struct sip_msg *msg, void *arg)
+{
+	struct sipsess *sess = arg;
+	(void)msg;
+
+	if (!err && sess->modify_pending && !sess->replyl.head) {
+		if (sess->established) {
+			sipsess_reinvite(sess, true);
+		} else {
+			sipsess_update(sess, true);
+		}
+	}
+}
 
 static void progress_handler(struct sipsess *sess, const struct sip_msg *msg)
 {
 	if (sip_msg_hdr_has_value(msg, SIP_HDR_REQUIRE, "100rel")) {
-		sipsess_prack(sess, msg);
+		sipsess_prack(sess, msg, prack_resp_handler);
 	}
 	sess->progrh(msg, sess->arg);
 }
